@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nano Banana 2.1 | Architectural AI Rendering Pipeline</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0d0e11;
+      color: #e2e8f0;
+    }
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #14161b; }
+    ::-webkit-scrollbar-thumb { background: #2d313b; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+
+    .eyedropper-active {
+      cursor: crosshair !important;
+    }
+    .step-connector {
+      position: relative;
+    }
+    .step-connector::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      right: -24px;
+      width: 24px;
+      height: 2px;
+      background: #2d313b;
+      z-index: 0;
+    }
+  </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden select-none">
+
+  <!-- TOP NAVIGATION BAR -->
+  <header class="h-14 border-b border-zinc-800 bg-[#121418] px-6 flex items-center justify-between shrink-0">
+    <div class="flex items-center space-x-3">
+      <div class="w-8 h-8 rounded bg-yellow-400/10 border border-yellow-400/30 flex items-center justify-center text-yellow-400 font-bold">
+        <i class="fa-solid fa-layer-group"></i>
+      </div>
+      <div>
+        <h1 class="text-sm font-semibold tracking-wide text-zinc-100 flex items-center gap-2">
+          NANO BANANA 2.1 <span class="text-xs font-normal px-2 py-0.5 bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 rounded mono">gemini-nano-banana-2.1</span>
+        </h1>
+        <p class="text-[11px] text-zinc-400">Sequential Non-Destructive Architectural Rendering Pipeline</p>
+      </div>
+    </div>
+
+    <!-- Nano Banana 2.1 API & Config -->
+    <div class="flex items-center space-x-2.5">
+      <!-- Model Selector locked to Nano Banana 2.1 by default -->
+      <div class="flex items-center bg-zinc-900 border border-zinc-700/80 rounded px-2.5 py-1 text-xs">
+        <span class="text-zinc-400 mr-1.5">Model:</span>
+        <select id="modelSelect" class="bg-transparent text-yellow-400 font-medium focus:outline-none mono cursor-pointer">
+          <option value="gemini-nano-banana-2.1" selected class="bg-zinc-900 text-zinc-200">Nano Banana 2.1 (gemini-nano-banana-2.1)</option>
+          <option value="demo" class="bg-zinc-900 text-zinc-400">Offline Demo Simulation (No Key)</option>
+        </select>
+      </div>
+
+      <!-- Nano Banana 2.1 Thinking Level -->
+      <div class="flex items-center bg-zinc-900 border border-zinc-700/80 rounded px-2.5 py-1 text-xs" title="Nano Banana 2.1 Configurable Thinking Level">
+        <span class="text-zinc-400 mr-1.5">Thinking:</span>
+        <select id="thinkingLevelSelect" class="bg-transparent text-zinc-200 font-medium focus:outline-none mono cursor-pointer">
+          <option value="MINIMAL" class="bg-zinc-900">MINIMAL</option>
+          <option value="MEDIUM" selected class="bg-zinc-900">MEDIUM</option>
+          <option value="HIGH" class="bg-zinc-900">HIGH (Strict Form)</option>
+        </select>
+      </div>
+
+      <!-- Nano Banana 2.1 Native Resolution -->
+      <div class="flex items-center bg-zinc-900 border border-zinc-700/80 rounded px-2.5 py-1 text-xs" title="Nano Banana 2.1 Output Resolution">
+        <span class="text-zinc-400 mr-1.5">Res:</span>
+        <select id="imageSizeSelect" class="bg-transparent text-zinc-200 font-medium focus:outline-none mono cursor-pointer">
+          <option value="1K" class="bg-zinc-900">1K</option>
+          <option value="2K" selected class="bg-zinc-900">2K</option>
+          <option value="4K" class="bg-zinc-900">4K</option>
+        </select>
+      </div>
+
+      <!-- Gemini API Key -->
+      <div class="relative flex items-center">
+        <i class="fa-solid fa-key text-zinc-500 text-xs absolute left-3"></i>
+        <input id="apiKeyInput" type="password" placeholder="Gemini API Key..." 
+          class="bg-zinc-900 border border-zinc-700/80 rounded pl-8 pr-3 py-1 text-xs text-zinc-200 focus:outline-none focus:border-yellow-400 w-44 mono" />
+      </div>
+    </div>
+  </header>
+
+  <!-- PIPELINE STEPPER BAR -->
+  <div class="h-14 bg-[#16181e] border-b border-zinc-800 px-6 flex items-center justify-between shrink-0">
+    <div class="flex items-center space-x-6">
+      <!-- Step 0: Base Input -->
+      <button onclick="setStep(0)" id="nav-step-0" class="step-connector flex items-center space-x-2.5 text-left group">
+        <div id="badge-step-0" class="w-6 h-6 rounded-full bg-yellow-400 text-black text-xs font-bold flex items-center justify-center">0</div>
+        <div>
+          <div class="text-xs font-medium text-zinc-200 group-hover:text-yellow-400 transition">Base Massing / ID</div>
+          <div class="text-[10px] text-zinc-500">Upload Source Geometry</div>
+        </div>
+      </button>
+
+      <!-- Step 1: Material Mapping -->
+      <button onclick="setStep(1)" id="nav-step-1" class="step-connector flex items-center space-x-2.5 text-left group">
+        <div id="badge-step-1" class="w-6 h-6 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700 text-xs font-bold flex items-center justify-center">1</div>
+        <div>
+          <div class="text-xs font-medium text-zinc-300 group-hover:text-yellow-400 transition">Color-to-Material</div>
+          <div class="text-[10px] text-zinc-500">Strict Form Lock</div>
+        </div>
+      </button>
+
+      <!-- Step 2: Photo Filter / Precedent -->
+      <button onclick="setStep(2)" id="nav-step-2" class="step-connector flex items-center space-x-2.5 text-left group">
+        <div id="badge-step-2" class="w-6 h-6 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700 text-xs font-bold flex items-center justify-center">2</div>
+        <div>
+          <div class="text-xs font-medium text-zinc-300 group-hover:text-yellow-400 transition">Precedent Atmosphere</div>
+          <div class="text-[10px] text-zinc-500">Extract Lighting & Mood</div>
+        </div>
+      </button>
+
+      <!-- Step 3: Entourage & Context -->
+      <button onclick="setStep(3)" id="nav-step-3" class="flex items-center space-x-2.5 text-left group">
+        <div id="badge-step-3" class="w-6 h-6 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700 text-xs font-bold flex items-center justify-center">3</div>
+        <div>
+          <div class="text-xs font-medium text-zinc-300 group-hover:text-yellow-400 transition">Entourage & Flora</div>
+          <div class="text-[10px] text-zinc-500">Add Trees & People</div>
+        </div>
+      </button>
+    </div>
+
+    <!-- Chain Status Indicator -->
+    <div class="flex items-center space-x-4 text-xs">
+      <div class="flex items-center space-x-2 text-zinc-400">
+        <span>Chain State:</span>
+        <span id="chainStatus0" class="px-2 py-0.5 rounded bg-zinc-800 text-zinc-500 mono text-[11px]">Base: Empty</span>
+        <i class="fa-solid fa-arrow-right text-[10px] text-zinc-600"></i>
+        <span id="chainStatus1" class="px-2 py-0.5 rounded bg-zinc-800 text-zinc-500 mono text-[11px]">S1: Pending</span>
+        <i class="fa-solid fa-arrow-right text-[10px] text-zinc-600"></i>
+        <span id="chainStatus2" class="px-2 py-0.5 rounded bg-zinc-800 text-zinc-500 mono text-[11px]">S2: Pending</span>
+        <i class="fa-solid fa-arrow-right text-[10px] text-zinc-600"></i>
+        <span id="chainStatus3" class="px-2 py-0.5 rounded bg-zinc-800 text-zinc-500 mono text-[11px]">S3: Pending</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN WORKSPACE -->
+  <div class="flex-1 flex overflow-hidden">
+    
+    <!-- LEFT SIDEBAR: STEP CONTROLS -->
+    <aside class="w-96 border-r border-zinc-800 bg-[#121418] flex flex-col justify-between overflow-y-auto p-5 shrink-0">
+      
+      <!-- STEP 0 PANEL: BASE UPLOAD -->
+      <div id="panel-step-0" class="space-y-5">
+        <div>
+          <span class="text-[10px] uppercase tracking-wider font-semibold text-yellow-400 mono">Step 00 / Input</span>
+          <h2 class="text-base font-semibold text-white mt-0.5">Base Massing / Material ID Pass</h2>
+          <p class="text-xs text-zinc-400 mt-1 leading-relaxed">
+            Upload your 3D viewport capture or color-coded Material ID pass (e.g., Rhino/Grasshopper, V-Ray, Enscape). Distinct colors will be mapped to architectural assemblies in Step 1.
+          </p>
+        </div>
+
+        <label class="block border-2 border-dashed border-zinc-700 hover:border-yellow-400/70 rounded-lg p-6 text-center cursor-pointer transition bg-zinc-900/40">
+          <input type="file" id="baseImageUpload" accept="image/*" class="hidden" onchange="handleBaseUpload(event)">
+          <i class="fa-solid fa-cloud-arrow-up text-2xl text-zinc-400 mb-2"></i>
+          <div class="text-xs font-medium text-zinc-200">Click to upload base image</div>
+          <div class="text-[11px] text-zinc-500 mt-1">PNG, JPG, WebP (Color-coded massing recommended)</div>
+        </label>
+
+        <div class="pt-2 border-t border-zinc-800">
+          <div class="text-xs font-medium text-zinc-300 mb-2">Or load a procedural architectural test pass:</div>
+          <button onclick="loadSampleColorMassing()" class="w-full py-2 px-3 bg-zinc-800 hover:bg-zinc-700 text-xs text-zinc-200 rounded border border-zinc-700 flex items-center justify-center space-x-2 transition">
+            <i class="fa-solid fa-cubes text-yellow-400"></i>
+            <span>Load Sample Color-Blocked Massing</span>
+          </button>
+        </div>
+
+        <button onclick="setStep(1)" class="w-full py-2.5 bg-yellow-400 hover:bg-yellow-300 text-black font-semibold text-xs rounded transition flex items-center justify-center space-x-2">
+          <span>Proceed to Step 1: Material Assignment</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+
+      <!-- STEP 1 PANEL: COLOR-TO-MATERIAL -->
+      <div id="panel-step-1" class="space-y-4 hidden">
+        <div>
+          <span class="text-[10px] uppercase tracking-wider font-semibold text-yellow-400 mono">Step 01 / Geometry Lock</span>
+          <h2 class="text-base font-semibold text-white mt-0.5">Color-to-Material Assignment</h2>
+          <p class="text-xs text-zinc-400 mt-1 leading-relaxed">
+            Use the eyedropper <i class="fa-solid fa-eye-dropper text-yellow-400"></i> to sample colors directly from your viewport, or set colors manually and define their target material assembly.
+          </p>
+        </div>
+
+        <!-- Eyedropper Status Banner -->
+        <div class="bg-zinc-900 border border-zinc-800 rounded p-2.5 flex items-center justify-between">
+          <div class="flex items-center space-x-2 text-xs">
+            <i class="fa-solid fa-eye-dropper text-yellow-400"></i>
+            <span id="eyedropperHint" class="text-zinc-300">Click an eyedropper button below to pick a color</span>
+          </div>
+        </div>
+
+        <!-- Dynamic Color-Material List -->
+        <div id="materialMappingsList" class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+          <!-- Populated via JS -->
+        </div>
+
+        <button onclick="addMaterialRow('#ef4444', 'Red Zone', 'Translucent red ETFE pneumatic cushions with dark anodized aluminum clamping frames')" 
+          class="w-full py-1.5 bg-zinc-800/80 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs rounded flex items-center justify-center space-x-1.5 transition">
+          <i class="fa-solid fa-plus text-[10px]"></i>
+          <span>Add Color Material Channel</span>
+        </button>
+
+        <!-- Quick Architectural Material Presets -->
+        <div>
+          <label class="text-[11px] text-zinc-400 block mb-1.5">Quick Material Spec Helpers (Click to apply to last row):</label>
+          <div class="flex flex-wrap gap-1.5">
+            <button onclick="appendMaterialPreset('Matte white powder-coated steel canopy')" class="text-[10px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2 py-1 rounded border border-zinc-700">Matte White Steel</button>
+            <button onclick="appendMaterialPreset('Polished architectural precast concrete panels')" class="text-[10px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2 py-1 rounded border border-zinc-700">Polished Precast</button>
+            <button onclick="appendMaterialPreset('Extruded terracotta rainscreen baguettes')" class="text-[10px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2 py-1 rounded border border-zinc-700">Terracotta Baguettes</button>
+            <button onclick="appendMaterialPreset('Fritted structural low-iron glass curtain wall')" class="text-[10px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2 py-1 rounded border border-zinc-700">Low-Iron Glass</button>
+            <button onclick="appendMaterialPreset('Cross-laminated mass timber / glulam soffit')" class="text-[10px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2 py-1 rounded border border-zinc-700">Glulam / Timber</button>
+          </div>
+        </div>
+
+        <!-- Strict Geometry Preservation Toggle -->
+        <div class="bg-zinc-900/90 border border-zinc-800 rounded p-3 space-y-2">
+          <label class="flex items-center space-x-2 text-xs text-zinc-200 cursor-pointer">
+            <input type="checkbox" id="strictGeometryLock" checked class="accent-yellow-400 rounded">
+            <span class="font-medium">Enforce 1:1 Silhouette & Edge Lock</span>
+          </label>
+          <p class="text-[11px] text-zinc-500">
+            Instructs Nano Banana 2.1 to preserve exact vanishing points, massing boundaries, and fenestration proportions without hallucinating extra volumes.
+          </p>
+        </div>
+
+        <button onclick="runStep1()" id="btnRunStep1" class="w-full py-2.5 bg-yellow-400 hover:bg-yellow-300 text-black font-semibold text-xs rounded transition flex items-center justify-center space-x-2 shadow-lg shadow-yellow-400/10">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>Execute Step 1 (Nano Banana 2.1)</span>
+        </button>
+      </div>
+
+      <!-- STEP 2 PANEL: PRECEDENT PHOTO FILTER -->
+      <div id="panel-step-2" class="space-y-4 hidden">
+        <div>
+          <span class="text-[10px] uppercase tracking-wider font-semibold text-yellow-400 mono">Step 02 / Atmosphere Transfer</span>
+          <h2 class="text-base font-semibold text-white mt-0.5">Precedent Photo Filter Extraction</h2>
+          <p class="text-xs text-zinc-400 mt-1 leading-relaxed">
+            Upload a reference architectural photograph. Nano Banana 2.1 will fuse the reference lighting mood, LUT color grading, and sky tone onto your Step 1 render while keeping your building geometry and materials locked.
+          </p>
+        </div>
+
+        <!-- Precedent Image Upload -->
+        <div>
+          <label class="text-xs font-medium text-zinc-300 block mb-1.5">Precedent Reference Image:</label>
+          <label class="block border border-dashed border-zinc-700 hover:border-yellow-400 rounded-lg p-3 text-center cursor-pointer transition bg-zinc-900/50">
+            <input type="file" id="precedentUpload" accept="image/*" class="hidden" onchange="handlePrecedentUpload(event)">
+            <div id="precedentPreviewContainer" class="hidden mb-2">
+              <img id="precedentPreview" class="h-28 w-full object-cover rounded border border-zinc-700 mx-auto" />
+            </div>
+            <div id="precedentUploadPrompt" class="py-3">
+              <i class="fa-solid fa-image text-lg text-zinc-400 mb-1"></i>
+              <div class="text-xs text-zinc-300">Upload Precedent Photo</div>
+              <div class="text-[10px] text-zinc-500">Extracts LUT, lighting mood & sky tone</div>
+            </div>
+          </label>
+          <button onclick="loadSamplePrecedent()" class="mt-1.5 w-full py-1 bg-zinc-800 hover:bg-zinc-700 text-[11px] text-zinc-300 rounded border border-zinc-700 transition">
+            Load Sample Dusk Modernist Precedent
+          </button>
+        </div>
+
+        <!-- Extraction Attributes -->
+        <div class="space-y-2 bg-zinc-900 border border-zinc-800 rounded p-3">
+          <div class="text-xs font-medium text-zinc-300">Filter Extraction Parameters:</div>
+          <label class="flex items-center space-x-2 text-xs text-zinc-400">
+            <input type="checkbox" id="extractColorGrade" checked class="accent-yellow-400">
+            <span>Color Grading, Contrast & Film Response</span>
+          </label>
+          <label class="flex items-center space-x-2 text-xs text-zinc-400">
+            <input type="checkbox" id="extractLighting" checked class="accent-yellow-400">
+            <span>Sun Azimuth Warmth & Shadow Softness</span>
+          </label>
+          <label class="flex items-center space-x-2 text-xs text-zinc-400">
+            <input type="checkbox" id="extractSky" checked class="accent-yellow-400">
+            <span>Sky Gradient & Atmospheric Haze</span>
+          </label>
+        </div>
+
+        <div>
+          <label class="text-xs text-zinc-400 block mb-1">Additional Mood Directive (Optional):</label>
+          <input id="step2CustomMood" type="text" placeholder="e.g., Golden hour coastal overcast, Kodak Portra 400..." 
+            class="w-full bg-zinc-900 border border-zinc-700 rounded px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-yellow-400">
+        </div>
+
+        <button onclick="runStep2()" id="btnRunStep2" class="w-full py-2.5 bg-yellow-400 hover:bg-yellow-300 text-black font-semibold text-xs rounded transition flex items-center justify-center space-x-2 shadow-lg shadow-yellow-400/10">
+          <i class="fa-solid fa-sliders"></i>
+          <span>Apply Precedent Filter (Nano Banana 2.1)</span>
+        </button>
+      </div>
+
+      <!-- STEP 3 PANEL: ENTOURAGE & VEGETATION -->
+      <div id="panel-step-3" class="space-y-4 hidden">
+        <div>
+          <span class="text-[10px] uppercase tracking-wider font-semibold text-yellow-400 mono">Step 03 / Context & Scale</span>
+          <h2 class="text-base font-semibold text-white mt-0.5">Add / Modify Trees & People</h2>
+          <p class="text-xs text-zinc-400 mt-1 leading-relaxed">
+            Populate your filtered architectural render with vegetation and human scale. The building geometry, facade materials, and Step 2 color grading remain locked.
+          </p>
+        </div>
+
+        <!-- Vegetation Input -->
+        <div>
+          <label class="text-xs font-medium text-zinc-300 block mb-1">Landscaping & Trees Directive:</label>
+          <textarea id="treesPrompt" rows="2" 
+            class="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-xs text-zinc-200 focus:outline-none focus:border-yellow-400"
+            placeholder="Describe trees, street trees, or foreground planting...">Add mature coastal palm trees and native subtropical ornamental grasses along the street edge and plaza</textarea>
+          <div class="flex flex-wrap gap-1 mt-1">
+            <button onclick="setInputText('treesPrompt', 'Mature coastal Sabal palms and lush biophilic planter beds')" class="text-[10px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2 py-0.5 rounded">Coastal Palms & Biophilia</button>
+            <button onclick="setInputText('treesPrompt', 'Deciduous urban street trees with dappled canopy shadows')" class="text-[10px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2 py-0.5 rounded">Urban Street Canopy</button>
+            <button onclick="setInputText('treesPrompt', 'Minimalist drought-tolerant desert xeriscaping and olive trees')" class="text-[10px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2 py-0.5 rounded">Olive Trees & Xeriscape</button>
+          </div>
+        </div>
+
+        <!-- People / Entourage Input -->
+        <div>
+          <label class="text-xs font-medium text-zinc-300 block mb-1">Human Scale & Entourage Directive:</label>
+          <textarea id="peoplePrompt" rows="2" 
+            class="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-xs text-zinc-200 focus:outline-none focus:border-yellow-400"
+            placeholder="Describe people placement, activities, and motion blur...">Add architectural entourage: small groups of gallery visitors walking through the shaded loggia threshold and plaza, subtle motion blur</textarea>
+          <div class="flex flex-wrap gap-1 mt-1">
+            <button onclick="setInputText('peoplePrompt', 'Gallery visitors conversing in the ground floor threshold, subtle motion blur')" class="text-[10px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2 py-0.5 rounded">Gallery Visitors (Motion Blur)</button>
+            <button onclick="setInputText('peoplePrompt', 'Sparse pedestrians walking along the sidewalk, natural candid lighting')" class="text-[10px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2 py-0.5 rounded">Minimal Pedestrians</button>
+            <button onclick="setInputText('peoplePrompt', 'Active public realm with outdoor cafe seating and evening strollers')" class="text-[10px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2 py-0.5 rounded">Active Public Plaza</button>
+          </div>
+        </div>
+
+        <button onclick="runStep3()" id="btnRunStep3" class="w-full py-2.5 bg-yellow-400 hover:bg-yellow-300 text-black font-semibold text-xs rounded transition flex items-center justify-center space-x-2 shadow-lg shadow-yellow-400/10">
+          <i class="fa-solid fa-tree"></i>
+          <span>Populate Entourage (Nano Banana 2.1)</span>
+        </button>
+      </div>
+
+      <!-- Compiled Prompt Inspector (Bottom of Sidebar) -->
+      <div class="pt-4 border-t border-zinc-800 mt-4">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-[10px] uppercase tracking-wider text-zinc-500 mono">Nano Banana 2.1 Prompt Payload</span>
+          <span class="text-[10px] text-zinc-500 mono" id="activeStepLabel">STEP 0</span>
+        </div>
+        <pre id="promptInspector" class="bg-zinc-950 border border-zinc-800 rounded p-2.5 text-[10px] text-zinc-400 mono whitespace-pre-wrap max-h-28 overflow-y-auto leading-relaxed">Upload a base massing image to begin the chain.</pre>
+      </div>
+
+    </aside>
+
+    <!-- CENTER VIEWPORT & CHAIN GALLERY -->
+    <main class="flex-1 flex flex-col bg-[#0a0b0e] relative overflow-hidden">
+      
+      <!-- Viewport Toolbar -->
+      <div class="h-10 border-b border-zinc-800/80 px-4 flex items-center justify-between bg-[#101216] text-xs">
+        <div class="flex items-center space-x-2">
+          <span class="text-zinc-400">Viewing Layer:</span>
+          <button onclick="switchViewportLayer(0)" id="layerBtn0" class="px-2 py-0.5 rounded bg-zinc-800 text-yellow-400 font-medium text-[11px]">0. Base Massing</button>
+          <button onclick="switchViewportLayer(1)" id="layerBtn1" class="px-2 py-0.5 rounded bg-zinc-900 text-zinc-500 hover:text-zinc-300 text-[11px]">1. Material Pass</button>
+          <button onclick="switchViewportLayer(2)" id="layerBtn2" class="px-2 py-0.5 rounded bg-zinc-900 text-zinc-500 hover:text-zinc-300 text-[11px]">2. Filtered Pass</button>
+          <button onclick="switchViewportLayer(3)" id="layerBtn3" class="px-2 py-0.5 rounded bg-zinc-900 text-zinc-500 hover:text-zinc-300 text-[11px]">3. Final Entourage</button>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <label class="flex items-center space-x-1.5 text-zinc-400 cursor-pointer text-[11px]">
+            <input type="checkbox" id="compareToggle" onchange="toggleCompareMode()" class="accent-yellow-400">
+            <span>Compare with Previous Step</span>
+          </label>
+          <button onclick="downloadCurrentImage()" class="px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded text-[11px] flex items-center space-x-1">
+            <i class="fa-solid fa-download text-[10px]"></i>
+            <span>Export PNG</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Canvas Container -->
+      <div class="flex-1 relative flex items-center justify-center p-6 overflow-hidden" id="viewportContainer">
+        <!-- Main Interactive Canvas (Used for display + Eyedropper sampling) -->
+        <div class="relative max-w-full max-h-full flex items-center justify-center shadow-2xl border border-zinc-800 rounded overflow-hidden bg-zinc-950">
+          <canvas id="mainCanvas" class="max-h-[calc(100vh-220px)] max-w-full object-contain block" onclick="handleCanvasClick(event)"></canvas>
+          
+          <!-- Comparison Overlay Slider -->
+          <div id="compareOverlay" class="hidden absolute top-0 left-0 bottom-0 overflow-hidden border-r-2 border-yellow-400 pointer-events-none" style="width: 50%;">
+            <img id="compareBeforeImg" class="max-h-[calc(100vh-220px)] max-w-none object-contain block" />
+            <div class="absolute top-3 left-3 bg-black/80 text-yellow-400 text-[10px] px-2 py-0.5 rounded mono border border-yellow-400/40">
+              PREVIOUS STEP
+            </div>
+          </div>
+
+          <!-- Slider Handle Input -->
+          <input id="compareSlider" type="range" min="0" max="100" value="50" 
+            class="hidden absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-20" 
+            oninput="updateCompareSlider(this.value)" />
+
+          <!-- Loading Overlay -->
+          <div id="loadingOverlay" class="hidden absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center z-30">
+            <div class="w-10 h-10 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin mb-3"></div>
+            <div id="loadingText" class="text-xs font-medium text-yellow-400 mono">Running gemini-nano-banana-2.1...</div>
+            <div class="text-[11px] text-zinc-400 mt-1">Preserving architectural edge vectors & perspective</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Node Chain Filmstrip -->
+      <div class="h-24 border-t border-zinc-800 bg-[#121418] px-6 flex items-center space-x-4 shrink-0 overflow-x-auto">
+        <div class="text-[11px] font-medium text-zinc-500 uppercase tracking-wider mono mr-2">Pipeline Nodes:</div>
+        
+        <!-- Node 0 Thumbnail -->
+        <div onclick="switchViewportLayer(0)" class="flex items-center space-x-2 bg-zinc-900 border border-zinc-800 hover:border-zinc-600 rounded p-1.5 cursor-pointer w-44 shrink-0">
+          <img id="thumb-0" class="w-12 h-12 object-cover rounded bg-zinc-950 border border-zinc-800" />
+          <div class="overflow-hidden">
+            <div class="text-[11px] font-medium text-zinc-200 truncate">0. Base Input</div>
+            <div class="text-[10px] text-zinc-500 mono">Color ID / Massing</div>
+          </div>
+        </div>
+
+        <i class="fa-solid fa-chevron-right text-zinc-700 text-xs"></i>
+
+        <!-- Node 1 Thumbnail -->
+        <div onclick="switchViewportLayer(1)" class="flex items-center space-x-2 bg-zinc-900 border border-zinc-800 hover:border-zinc-600 rounded p-1.5 cursor-pointer w-44 shrink-0">
+          <img id="thumb-1" class="w-12 h-12 object-cover rounded bg-zinc-950 border border-zinc-800" />
+          <div class="overflow-hidden">
+            <div class="text-[11px] font-medium text-zinc-200 truncate">1. Material Pass</div>
+            <div class="text-[10px] text-zinc-500 mono" id="thumb-status-1">Awaiting Step 1</div>
+          </div>
+        </div>
+
+        <i class="fa-solid fa-chevron-right text-zinc-700 text-xs"></i>
+
+        <!-- Node 2 Thumbnail -->
+        <div onclick="switchViewportLayer(2)" class="flex items-center space-x-2 bg-zinc-900 border border-zinc-800 hover:border-zinc-600 rounded p-1.5 cursor-pointer w-44 shrink-0">
+          <img id="thumb-2" class="w-12 h-12 object-cover rounded bg-zinc-950 border border-zinc-800" />
+          <div class="overflow-hidden">
+            <div class="text-[11px] font-medium text-zinc-200 truncate">2. Precedent Filter</div>
+            <div class="text-[10px] text-zinc-500 mono" id="thumb-status-2">Awaiting Step 2</div>
+          </div>
+        </div>
+
+        <i class="fa-solid fa-chevron-right text-zinc-700 text-xs"></i>
+
+        <!-- Node 3 Thumbnail -->
+        <div onclick="switchViewportLayer(3)" class="flex items-center space-x-2 bg-zinc-900 border border-zinc-800 hover:border-zinc-600 rounded p-1.5 cursor-pointer w-44 shrink-0">
+          <img id="thumb-3" class="w-12 h-12 object-cover rounded bg-zinc-950 border border-zinc-800" />
+          <div class="overflow-hidden">
+            <div class="text-[11px] font-medium text-zinc-200 truncate">3. Entourage Pass</div>
+            <div class="text-[10px] text-zinc-500 mono" id="thumb-status-3">Awaiting Step 3</div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    // =========================================================================
+    // STATE MANAGEMENT: SEQUENTIAL CHAIN IMAGES
+    // =========================================================================
+    const chainState = {
+      currentStep: 0,
+      viewingLayer: 0,
+      pickingColorForRowId: null,
+      images: {
+        0: null, // Base Color ID / Massing dataURL
+        1: null, // Step 1 Output (Materials Mapped)
+        2: null, // Step 2 Output (Precedent Filter Applied)
+        3: null  // Step 3 Output (Trees & People Added)
+      },
+      precedentImage: null, // DataURL for Step 2 Reference Photo
+      materialRows: [
+        { id: 1, hex: '#38bdf8', label: 'Cyan Volume', material: 'Matte white powder-coated folded steel canopy structure' },
+        { id: 2, hex: '#f43f5e', label: 'Coral Volume', material: 'Extruded warm terracotta rainscreen baguettes and louvers' },
+        { id: 3, hex: '#a3e635', label: 'Lime Volume', material: 'Ultra-clear low-iron structural glass facade with dark mullions' },
+        { id: 4, hex: '#a855f7', label: 'Purple Base', material: 'Polished architectural board-formed precast concrete plinth' }
+      ]
+    };
+
+    const canvas = document.getElementById('mainCanvas');
+    const ctx = canvas.getContext('2d');
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderMaterialRows();
+      loadSampleColorMassing();
+      loadSamplePrecedent();
+      updatePromptInspector();
+    });
+
+    // =========================================================================
+    // NAVIGATION & UI HELPERS
+    // =========================================================================
+    function setStep(stepIndex) {
+      chainState.currentStep = stepIndex;
+      document.getElementById('activeStepLabel').innerText = `STEP ${stepIndex}`;
+
+      for (let i = 0; i <= 3; i++) {
+        const panel = document.getElementById(`panel-step-${i}`);
+        const badge = document.getElementById(`badge-step-${i}`);
+        if (i === stepIndex) {
+          panel.classList.remove('hidden');
+          badge.className = 'w-6 h-6 rounded-full bg-yellow-400 text-black text-xs font-bold flex items-center justify-center';
+        } else {
+          panel.classList.add('hidden');
+          const hasImage = !!chainState.images[i];
+          badge.className = hasImage 
+            ? 'w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-bold flex items-center justify-center'
+            : 'w-6 h-6 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700 text-xs font-bold flex items-center justify-center';
+        }
+      }
+
+      if (stepIndex === 1 && chainState.images[0] && !chainState.images[1]) {
+        switchViewportLayer(0);
+      } else if (chainState.images[stepIndex]) {
+        switchViewportLayer(stepIndex);
+      } else if (chainState.images[stepIndex - 1]) {
+        switchViewportLayer(stepIndex - 1);
+      }
+
+      updatePromptInspector();
+    }
+
+    function switchViewportLayer(layerIndex) {
+      if (!chainState.images[layerIndex]) return;
+      chainState.viewingLayer = layerIndex;
+
+      for (let i = 0; i <= 3; i++) {
+        const btn = document.getElementById(`layerBtn${i}`);
+        if (i === layerIndex) {
+          btn.className = 'px-2 py-0.5 rounded bg-zinc-800 text-yellow-400 font-medium text-[11px] border border-yellow-400/30';
+        } else {
+          btn.className = 'px-2 py-0.5 rounded bg-zinc-900 text-zinc-500 hover:text-zinc-300 text-[11px]';
+        }
+      }
+
+      drawDataUrlToCanvas(chainState.images[layerIndex]);
+      updateCompareView();
+    }
+
+    function drawDataUrlToCanvas(dataUrl) {
+      const img = new Image();
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+      };
+      img.src = dataUrl;
+    }
+
+    function updateChainBadges() {
+      for (let i = 0; i <= 3; i++) {
+        const thumb = document.getElementById(`thumb-${i}`);
+        const statusBadge = document.getElementById(`chainStatus${i}`);
+        const thumbStatus = document.getElementById(`thumb-status-${i}`);
+        if (chainState.images[i]) {
+          thumb.src = chainState.images[i];
+          statusBadge.className = 'px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 mono text-[11px]';
+          statusBadge.innerText = i === 0 ? 'Base: Ready' : `S${i}: Complete`;
+          if (thumbStatus) thumbStatus.innerText = 'Ready';
+        }
+      }
+    }
+
+    // =========================================================================
+    // STEP 1: DYNAMIC COLOR-TO-MATERIAL UI & EYEDROPPER
+    // =========================================================================
+    function renderMaterialRows() {
+      const container = document.getElementById('materialMappingsList');
+      container.innerHTML = '';
+
+      chainState.materialRows.forEach((row) => {
+        const div = document.createElement('div');
+        div.className = 'bg-zinc-900 border border-zinc-800 rounded p-2.5 space-y-2';
+        div.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <input type="color" value="${row.hex}" onchange="updateRowHex(${row.id}, this.value)" 
+                class="w-6 h-6 rounded cursor-pointer bg-transparent border-0" />
+              <span class="text-xs font-mono text-zinc-300 uppercase">${row.hex}</span>
+              <button onclick="activateEyedropper(${row.id})" title="Sample color from canvas"
+                class="px-2 py-0.5 rounded text-[11px] ${chainState.pickingColorForRowId === row.id ? 'bg-yellow-400 text-black font-semibold' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'} transition">
+                <i class="fa-solid fa-eye-dropper"></i> Pick
+              </button>
+            </div>
+            <button onclick="removeMaterialRow(${row.id})" class="text-zinc-500 hover:text-red-400 text-xs">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+          <input type="text" value="${row.material}" oninput="updateRowMaterial(${row.id}, this.value)"
+            placeholder="Assign architectural material assembly..."
+            class="w-full bg-zinc-950 border border-zinc-800 rounded px-2 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-yellow-400" />
+        `;
+        container.appendChild(div);
+      });
+      updatePromptInspector();
+    }
+
+    function addMaterialRow(hex, label, material) {
+      chainState.materialRows.push({
+        id: Date.now(),
+        hex,
+        label,
+        material
+      });
+      renderMaterialRows();
+    }
+
+    function removeMaterialRow(id) {
+      chainState.materialRows = chainState.materialRows.filter(r => r.id !== id);
+      renderMaterialRows();
+    }
+
+    function updateRowHex(id, newHex) {
+      const row = chainState.materialRows.find(r => r.id === id);
+      if (row) row.hex = newHex;
+      renderMaterialRows();
+    }
+
+    function updateRowMaterial(id, newMat) {
+      const row = chainState.materialRows.find(r => r.id === id);
+      if (row) row.material = newMat;
+      updatePromptInspector();
+    }
+
+    function appendMaterialPreset(presetText) {
+      if (chainState.materialRows.length === 0) return;
+      const lastRow = chainState.materialRows[chainState.materialRows.length - 1];
+      lastRow.material = presetText;
+      renderMaterialRows();
+    }
+
+    function activateEyedropper(rowId) {
+      chainState.pickingColorForRowId = rowId;
+      switchViewportLayer(0);
+      canvas.classList.add('eyedropper-active');
+      document.getElementById('eyedropperHint').innerHTML = `<span class="text-yellow-400 font-medium">Click anywhere on the Base Massing image to sample color...</span>`;
+      renderMaterialRows();
+    }
+
+    function handleCanvasClick(event) {
+      if (!chainState.pickingColorForRowId) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = Math.floor((event.clientX - rect.left) * scaleX);
+      const y = Math.floor((event.clientY - rect.top) * scaleY);
+
+      const pixel = ctx.getImageData(x, y, 1, 1).data;
+      const hex = '#' + [pixel[0], pixel[1], pixel[2]].map(v => v.toString(16).padStart(2, '0')).join('');
+
+      updateRowHex(chainState.pickingColorForRowId, hex);
+      chainState.pickingColorForRowId = null;
+      canvas.classList.remove('eyedropper-active');
+      document.getElementById('eyedropperHint').innerText = `Sampled ${hex.toUpperCase()} from viewport`;
+      renderMaterialRows();
+    }
+
+    // =========================================================================
+    // PROMPT COMPILER FOR EACH NODE IN THE CHAIN
+    // =========================================================================
+    function buildStep1Prompt() {
+      const strictLock = document.getElementById('strictGeometryLock')?.checked;
+      const mappings = chainState.materialRows
+        .map((r) => `- Region colored ${r.hex.toUpperCase()}: Render as ${r.material}.`)
+        .join('\n');
+
+      return [
+        `ARCHITECTURAL MATERIAL ASSIGNMENT (STRICT GEOMETRY LOCK):`,
+        `Transform this color-coded architectural massing image into a photorealistic architectural rendering by assigning the following materials to their corresponding color-coded surfaces:`,
+        mappings,
+        strictLock 
+          ? `CRITICAL CONSTRAINT: Do NOT alter any 3D form, silhouette, massing proportions, camera perspective, or edge lines. Preserve 100% of the underlying architectural geometry. Only replace the flat surface colors with realistic physical materials, accurate specular reflections, and subtle ambient occlusion.`
+          : `Maintain the overall architectural massing and perspective.`
+      ].join('\n');
+    }
+
+    function buildStep2Prompt() {
+      const colorGrade = document.getElementById('extractColorGrade')?.checked;
+      const lighting = document.getElementById('extractLighting')?.checked;
+      const sky = document.getElementById('extractSky')?.checked;
+      const customMood = document.getElementById('step2CustomMood')?.value || '';
+
+      const extractedAspects = [];
+      if (colorGrade) extractedAspects.push('color grading, tonal contrast, and photographic film LUT');
+      if (lighting) extractedAspects.push('sunlight warmth, shadow temperature, and atmospheric glow');
+      if (sky) extractedAspects.push('sky dome gradient and horizon atmosphere');
+
+      return [
+        `ARCHITECTURAL PRECEDENT ATMOSPHERE & FILTER TRANSFER:`,
+        `Image 1 is the target architectural rendering. Image 2 is the photographic precedent reference.`,
+        `Extract the ${extractedAspects.join(', ')} from Image 2 (the precedent) and apply that exact photographic filter and lighting atmosphere onto Image 1.`,
+        customMood ? `Additional atmospheric note: ${customMood}.` : '',
+        `CRITICAL CONSTRAINT: Do NOT change the architecture, building form, or assigned facade materials from Image 1. Only transfer the photographic mood, lighting filter, and sky atmosphere from Image 2.`
+      ].filter(Boolean).join('\n');
+    }
+
+    function buildStep3Prompt() {
+      const trees = document.getElementById('treesPrompt')?.value || '';
+      const people = document.getElementById('peoplePrompt')?.value || '';
+
+      return [
+        `ARCHITECTURAL ENTOURAGE & LANDSCAPING PASS:`,
+        `Using the provided architectural rendering as the locked base image, integrate the following contextual elements seamlessly into the scene:`,
+        trees ? `- Vegetation & Trees: ${trees}.` : '',
+        people ? `- People & Human Scale: ${people}.` : '',
+        `CRITICAL CONSTRAINT: Preserve the exact building geometry, facade materials, and photographic color grading from the input image. Match all shadows, perspective scale, and color temperature of the newly added trees and people to the existing scene.`
+      ].filter(Boolean).join('\n');
+    }
+
+    function updatePromptInspector() {
+      const inspector = document.getElementById('promptInspector');
+      if (chainState.currentStep === 0) {
+        inspector.innerText = "Step 0: Upload your color-coded massing or base viewport image.";
+      } else if (chainState.currentStep === 1) {
+        inspector.innerText = buildStep1Prompt();
+      } else if (chainState.currentStep === 2) {
+        inspector.innerText = buildStep2Prompt();
+      } else if (chainState.currentStep === 3) {
+        inspector.innerText = buildStep3Prompt();
+      }
+    }
+
+    function setInputText(id, text) {
+      document.getElementById(id).value = text;
+      updatePromptInspector();
+    }
+
+    // =========================================================================
+    // NANO BANANA 2.1 (gemini-nano-banana-2.1) API CALLER
+    // =========================================================================
+    async function callNanoBanana(promptText, base64ImagesArray, stepNumber) {
+      const apiKey = document.getElementById('apiKeyInput').value.trim();
+      const selectedModel = document.getElementById('modelSelect').value;
+      const thinkingLevel = document.getElementById('thinkingLevelSelect').value;
+      const imageSize = document.getElementById('imageSizeSelect').value;
+
+      // Run visual simulation if no API key is provided or Demo mode is chosen
+      if (!apiKey || selectedModel === 'demo') {
+        return await simulateNanoBananaStep(stepNumber);
+      }
+
+      const parts = [{ text: promptText }];
+      for (const dataUrl of base64ImagesArray) {
+        const [meta, base64Data] = dataUrl.split(',');
+        const mimeType = meta.match(/:(.*?);/)[1];
+        parts.push({
+          inline_data: {
+            mime_type: mimeType,
+            data: base64Data
+          }
+        });
+      }
+
+      // Official Gemini Nano Banana 2.1 Endpoint: gemini-nano-banana-2.1
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`;
+      const payload = {
+        contents: [{ parts }],
+        generationConfig: {
+          responseModalities: ["TEXT", "IMAGE"],
+          maxOutputTokens: 32768,
+          thinkingConfig: {
+            thinkingLevel: thinkingLevel
+          },
+          imageConfig: {
+            imageSize: imageSize
+          }
+        }
+      };
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Nano Banana 2.1 API Error (${response.status}): ${errText}`);
+      }
+
+      const result = await response.json();
+      const candidateParts = result.candidates?.[0]?.content?.parts || [];
+      for (const part of candidateParts) {
+        const inlineData = part.inlineData || part.inline_data;
+        if (inlineData && inlineData.data) {
+          const mime = inlineData.mimeType || inlineData.mime_type || 'image/png';
+          return `data:${mime};base64,${inlineData.data}`;
+        }
+      }
+
+      throw new Error("No image was returned by gemini-nano-banana-2.1. Verify your API key and quota.");
+    }
+
+    // =========================================================================
+    // EXECUTING STEPS 1, 2, AND 3 IN SEQUENCE
+    // =========================================================================
+    async function runStep1() {
+      if (!chainState.images[0]) {
+        alert("Please upload or load a Base Massing image in Step 0 first.");
+        return;
+      }
+      setLoading(true, "Step 1: gemini-nano-banana-2.1 mapping materials with 1:1 geometry lock...");
+      try {
+        const prompt = buildStep1Prompt();
+        const outputDataUrl = await callNanoBanana(prompt, [chainState.images[0]], 1);
+        chainState.images[1] = outputDataUrl;
+        updateChainBadges();
+        switchViewportLayer(1);
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function runStep2() {
+      const inputImg = chainState.images[1] || chainState.images[0];
+      if (!inputImg) {
+        alert("Please complete Step 1 first.");
+        return;
+      }
+      if (!chainState.precedentImage) {
+        alert("Please upload or load a Precedent Reference Photo first.");
+        return;
+      }
+      setLoading(true, "Step 2: gemini-nano-banana-2.1 extracting filter from precedent image...");
+      try {
+        const prompt = buildStep2Prompt();
+        const outputDataUrl = await callNanoBanana(prompt, [inputImg, chainState.precedentImage], 2);
+        chainState.images[2] = outputDataUrl;
+        updateChainBadges();
+        switchViewportLayer(2);
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function runStep3() {
+      const inputImg = chainState.images[2] || chainState.images[1] || chainState.images[0];
+      if (!inputImg) {
+        alert("Please complete previous steps first.");
+        return;
+      }
+      setLoading(true, "Step 3: gemini-nano-banana-2.1 populating architectural entourage & flora...");
+      try {
+        const prompt = buildStep3Prompt();
+        const outputDataUrl = await callNanoBanana(prompt, [inputImg], 3);
+        chainState.images[3] = outputDataUrl;
+        updateChainBadges();
+        switchViewportLayer(3);
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function setLoading(isLoading, text = "") {
+      const overlay = document.getElementById('loadingOverlay');
+      const label = document.getElementById('loadingText');
+      if (isLoading) {
+        label.innerText = text;
+        overlay.classList.remove('hidden');
+      } else {
+        overlay.classList.add('hidden');
+      }
+    }
+
+    // =========================================================================
+    // FILE UPLOADS & PROCEDURAL ARCHITECTURAL SAMPLES
+    // =========================================================================
+    function handleBaseUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        chainState.images[0] = e.target.result;
+        updateChainBadges();
+        switchViewportLayer(0);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handlePrecedentUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        chainState.precedentImage = e.target.result;
+        document.getElementById('precedentPreview').src = e.target.result;
+        document.getElementById('precedentPreviewContainer').classList.remove('hidden');
+        document.getElementById('precedentUploadPrompt').classList.add('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function loadSampleColorMassing() {
+      const offCanvas = document.createElement('canvas');
+      offCanvas.width = 960;
+      offCanvas.height = 540;
+      const c = offCanvas.getContext('2d');
+
+      c.fillStyle = '#1e293b';
+      c.fillRect(0, 0, 960, 380);
+      c.fillStyle = '#334155';
+      c.fillRect(0, 380, 960, 160);
+
+      // Purple Plinth / Loggia Base (#a855f7)
+      c.fillStyle = '#a855f7';
+      c.fillRect(160, 290, 640, 100);
+
+      c.fillStyle = '#1e1b4b';
+      for (let x = 190; x < 760; x += 95) {
+        c.fillRect(x, 310, 60, 80);
+      }
+
+      // Coral Upper Volume (#f43f5e)
+      c.fillStyle = '#f43f5e';
+      c.fillRect(190, 150, 340, 140);
+
+      // Lime Glass Volume (#a3e635)
+      c.fillStyle = '#a3e635';
+      c.fillRect(530, 170, 240, 120);
+
+      // Cyan Folded Canopy (#38bdf8)
+      c.fillStyle = '#38bdf8';
+      c.beginPath();
+      c.moveTo(120, 150);
+      c.lineTo(480, 95);
+      c.lineTo(840, 145);
+      c.lineTo(820, 170);
+      c.lineTo(480, 125);
+      c.lineTo(140, 170);
+      c.closePath();
+      c.fill();
+
+      chainState.images[0] = offCanvas.toDataURL('image/png');
+      updateChainBadges();
+      switchViewportLayer(0);
+    }
+
+    function loadSamplePrecedent() {
+      const offCanvas = document.createElement('canvas');
+      offCanvas.width = 400;
+      offCanvas.height = 225;
+      const c = offCanvas.getContext('2d');
+
+      const grad = c.createLinearGradient(0, 0, 0, 225);
+      grad.addColorStop(0, '#1e1b4b');
+      grad.addColorStop(0.45, '#be185d');
+      grad.addColorStop(0.75, '#f59e0b');
+      grad.addColorStop(1, '#27272a');
+      c.fillStyle = grad;
+      c.fillRect(0, 0, 400, 225);
+
+      const dataUrl = offCanvas.toDataURL('image/png');
+      chainState.precedentImage = dataUrl;
+      document.getElementById('precedentPreview').src = dataUrl;
+      document.getElementById('precedentPreviewContainer').classList.remove('hidden');
+      document.getElementById('precedentUploadPrompt').classList.add('hidden');
+    }
+
+    async function simulateNanoBananaStep(stepNumber) {
+      await new Promise(r => setTimeout(r, 1100));
+      const offCanvas = document.createElement('canvas');
+      offCanvas.width = 960;
+      offCanvas.height = 540;
+      const c = offCanvas.getContext('2d');
+
+      const prevImg = new Image();
+      const sourceUrl = stepNumber === 1 ? chainState.images[0] : (chainState.images[stepNumber - 1] || chainState.images[0]);
+      await new Promise(resolve => {
+        prevImg.onload = resolve;
+        prevImg.src = sourceUrl;
+      });
+      c.drawImage(prevImg, 0, 0, 960, 540);
+
+      if (stepNumber === 1) {
+        c.fillStyle = '#cbd5e1';
+        c.fillRect(0, 0, 960, 380);
+        c.fillStyle = '#64748b';
+        c.fillRect(0, 380, 960, 160);
+
+        c.fillStyle = '#94a3b8';
+        c.fillRect(160, 290, 640, 100);
+        c.fillStyle = '#0f172a';
+        for (let x = 190; x < 760; x += 95) {
+          c.fillRect(x, 310, 60, 80);
+        }
+
+        c.fillStyle = '#b45309';
+        c.fillRect(190, 150, 340, 140);
+        c.strokeStyle = '#78350f';
+        for (let x = 195; x < 530; x += 8) {
+          c.beginPath(); c.moveTo(x, 150); c.lineTo(x, 290); c.stroke();
+        }
+
+        c.fillStyle = '#38bdf8';
+        c.globalAlpha = 0.45;
+        c.fillRect(530, 170, 240, 120);
+        c.globalAlpha = 1.0;
+        c.strokeStyle = '#1e293b';
+        for (let x = 530; x <= 770; x += 30) {
+          c.beginPath(); c.moveTo(x, 170); c.lineTo(x, 290); c.stroke();
+        }
+
+        c.fillStyle = '#f8fafc';
+        c.beginPath();
+        c.moveTo(120, 150); c.lineTo(480, 95); c.lineTo(840, 145);
+        c.lineTo(820, 170); c.lineTo(480, 125); c.lineTo(140, 170);
+        c.closePath();
+        c.fill();
+      } else if (stepNumber === 2) {
+        const grad = c.createLinearGradient(0, 0, 0, 540);
+        grad.addColorStop(0, 'rgba(49, 46, 129, 0.45)');
+        grad.addColorStop(0.5, 'rgba(217, 119, 6, 0.35)');
+        grad.addColorStop(1, 'rgba(24, 24, 27, 0.45)');
+        c.fillStyle = grad;
+        c.fillRect(0, 0, 960, 540);
+      } else if (stepNumber === 3) {
+        c.fillStyle = '#14532d';
+        c.beginPath(); c.arc(95, 280, 55, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.arc(870, 270, 65, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#3f2e21';
+        c.fillRect(90, 320, 10, 80);
+        c.fillRect(865, 320, 12, 80);
+
+        c.fillStyle = '#090d16';
+        const peopleCoords = [260, 310, 450, 580, 620];
+        peopleCoords.forEach(px => {
+          c.beginPath(); c.arc(px, 365, 5, 0, Math.PI * 2); c.fill();
+          c.fillRect(px - 4, 372, 8, 24);
+        });
+      }
+
+      return offCanvas.toDataURL('image/png');
+    }
+
+    // =========================================================================
+    // COMPARE SLIDER & EXPORT
+    // =========================================================================
+    function toggleCompareMode() {
+      updateCompareView();
+    }
+
+    function updateCompareView() {
+      const compareOn = document.getElementById('compareToggle').checked;
+      const overlay = document.getElementById('compareOverlay');
+      const slider = document.getElementById('compareSlider');
+      const beforeImg = document.getElementById('compareBeforeImg');
+
+      const prevLayer = Math.max(0, chainState.viewingLayer - 1);
+      if (compareOn && chainState.images[prevLayer] && chainState.viewingLayer > 0) {
+        beforeImg.src = chainState.images[prevLayer];
+        beforeImg.style.width = canvas.clientWidth + 'px';
+        beforeImg.style.height = canvas.clientHeight + 'px';
+        overlay.classList.remove('hidden');
+        slider.classList.remove('hidden');
+      } else {
+        overlay.classList.add('hidden');
+        slider.classList.add('hidden');
+      }
+    }
+
+    function updateCompareSlider(val) {
+      document.getElementById('compareOverlay').style.width = val + '%';
+    }
+
+    function downloadCurrentImage() {
+      const dataUrl = chainState.images[chainState.viewingLayer];
+      if (!dataUrl) return;
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = `nano-banana-2.1-step-${chainState.viewingLayer}.png`;
+      a.click();
+    }
+  </script>
+</body>
+</html>
